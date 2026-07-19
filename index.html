@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#667eea">
+<meta name="description" content="Aplikasi pencatat waktu kejadian pribadi - rekam waktu & jeda antar aktivitas">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pencatat Waktu">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⏱️</text></svg>">
+<title>⏱️ Pencatat Waktu Kejadian</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { overscroll-behavior: none; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 16px;
+    color: #333;
+    -webkit-font-smoothing: antialiased;
+  }
+  .container {
+    max-width: 500px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+  }
+  h1 {
+    text-align: center;
+    color: #4a4a8e;
+    margin-bottom: 5px;
+    font-size: 1.4em;
+  }
+  .subtitle {
+    text-align: center;
+    color: #888;
+    font-size: 0.85em;
+    margin-bottom: 20px;
+  }
+  .stats {
+    display: flex;
+    justify-content: space-around;
+    background: #f5f5ff;
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+  }
+  .stat-item { text-align: center; }
+  .stat-value { font-size: 1.4em; font-weight: bold; color: #667eea; }
+  .stat-label { font-size: 0.75em; color: #888; }
+
+  .add-btn {
+    width: 100%;
+    padding: 18px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    border-radius: 15px;
+    font-size: 1.2em;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(102,126,234,0.4);
+    transition: transform 0.1s;
+    touch-action: manipulation;
+  }
+  .add-btn:active { transform: scale(0.97); }
+
+  .form-box {
+    background: #f9f9ff;
+    border: 2px dashed #667eea;
+    border-radius: 15px;
+    padding: 15px;
+    margin-top: 15px;
+    animation: slide 0.3s ease;
+  }
+  @keyframes slide { from { opacity:0; transform: translateY(-10px); } to { opacity:1; transform: translateY(0); } }
+
+  .form-box .time-display {
+    font-size: 1.6em;
+    font-weight: bold;
+    color: #764ba2;
+    text-align: center;
+    margin-bottom: 10px;
+    font-family: "SF Mono", Consolas, monospace;
+    letter-spacing: 2px;
+  }
+  .form-box input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1em;
+    margin-bottom: 10px;
+    font-family: inherit;
+  }
+  .form-box input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.15); }
+  .form-actions { display: flex; gap: 8px; }
+  .form-actions button {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1em;
+    touch-action: manipulation;
+  }
+  .btn-save { background: #4caf50; color: white; }
+  .btn-save:active { background: #3d9140; }
+  .btn-cancel { background: #eee; color: #555; }
+  .btn-cancel:active { background: #ddd; }
+
+  .list { margin-top: 20px; }
+  .item {
+    background: #fafafa;
+    border-left: 4px solid #667eea;
+    padding: 12px 12px 12px 14px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    position: relative;
+    animation: slide 0.25s ease;
+  }
+  .item-time {
+    font-family: "SF Mono", Consolas, monospace;
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #333;
+  }
+  .item-date { font-size: 0.75em; color: #999; }
+  .item-note { color: #555; margin-top: 3px; word-break: break-word; }
+  .item-gap {
+    display: inline-block;
+    background: #fff3cd;
+    color: #856404;
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-size: 0.8em;
+    margin-top: 6px;
+    font-weight: 500;
+  }
+  .item-delete {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #ff5252;
+    color: white;
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 0.85em;
+    touch-action: manipulation;
+  }
+  .item-delete:active { background: #e04040; }
+  .clear-all {
+    width: 100%;
+    margin-top: 15px;
+    padding: 12px;
+    background: #fff;
+    color: #ff5252;
+    border: 1px solid #ff5252;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    touch-action: manipulation;
+  }
+  .clear-all:active { background: #fff0f0; }
+  .empty {
+    text-align: center;
+    color: #aaa;
+    padding: 30px 10px;
+    font-style: italic;
+  }
+  .footer {
+    text-align: center;
+    color: rgba(255,255,255,0.8);
+    font-size: 0.75em;
+    margin-top: 20px;
+  }
+  .footer a { color: white; text-decoration: none; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>⏱️ Pencatat Waktu Kejadian</h1>
+    <p class="subtitle">Tekan ➕ untuk merekam waktu & keterangan</p>
+
+    <div class="stats">
+      <div class="stat-item">
+        <div class="stat-value" id="totalCount">0</div>
+        <div class="stat-label">Total</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="todayCount">0</div>
+        <div class="stat-label">Hari Ini</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="avgGap">-</div>
+        <div class="stat-label">Rata² Jeda</div>
+      </div>
+    </div>
+
+    <button class="add-btn" id="addBtn">➕ Catat Kejadian</button>
+
+    <div id="formArea"></div>
+    <div class="list" id="list"></div>
+    <button class="clear-all" id="clearBtn" style="display:none;">🗑️ Hapus Semua Data</button>
+  </div>
+
+  <div class="footer">
+    Data tersimpan lokal di browser Anda · <a href="#" id="exportBtn">📤 Ekspor JSON</a>
+  </div>
+
+<script>
+  const STORAGE_KEY = 'waktuKejadian_v1';
+  let data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  let formOpen = false;
+
+  const $ = id => document.getElementById(id);
+
+  function save() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch (e) {
+      alert('Penyimpanan penuh! Silakan hapus beberapa data.');
+    }
+  }
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function formatTime(ts) {
+    const d = new Date(ts);
+    return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  }
+
+  function formatDate(ts) {
+    const d = new Date(ts);
+    const hari = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+    const bulan = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+    return `${hari[d.getDay()]}, ${d.getDate()} ${bulan[d.getMonth()]} ${d.getFullYear()} · ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  function formatGap(ms) {
+    const totalSec = Math.floor(ms / 1000);
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    if (h > 0) return `${h}j ${m}m ${s}d`;
+    if (m > 0) return `${m}m ${s}d`;
+    return `${s}d`;
+  }
+
+  function isToday(ts) {
+    const d = new Date(ts), n = new Date();
+    return d.toDateString() === n.toDateString();
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function render() {
+    $('totalCount').textContent = data.length;
+    $('todayCount').textContent = data.filter(x => isToday(x.ts)).length;
+
+    if (data.length >= 2) {
+      let totalGap = 0;
+      for (let i = 1; i < data.length; i++) {
+        totalGap += data[i].ts - data[i-1].ts;
+      }
+      $('avgGap').textContent = formatGap(totalGap / (data.length - 1));
+    } else {
+      $('avgGap').textContent = '-';
+    }
+
+    const list = $('list');
+    list.innerHTML = '';
+    if (data.length === 0) {
+      list.innerHTML = '<div class="empty">Belum ada catatan.<br>Tekan ➕ untuk mulai.</div>';
+      $('clearBtn').style.display = 'none';
+      return;
+    }
+    $('clearBtn').style.display = 'block';
+
+    const sorted = [...data].sort((a,b) => b.ts - a.ts);
+    sorted.forEach(item => {
+      const realIdx = data.indexOf(item);
+      const prev = realIdx > 0 ? data[realIdx - 1] : null;
+      const gap = prev ? (item.ts - prev.ts) : null;
+
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.innerHTML = `
+        <button class="item-delete" data-id="${item.id}" aria-label="Hapus">✕</button>
+        <div class="item-time">${formatTime(item.ts)}</div>
+        <div class="item-date">${formatDate(item.ts)}</div>
+        <div class="item-note">${escapeHtml(item.note) || '<em style="color:#bbb">(tanpa keterangan)</em>'}</div>
+        ${gap !== null ? `<span class="item-gap">⏳ Tahan: ${formatGap(gap)}</span>` : '<span class="item-gap" style="background:#e3f2fd;color:#1565c0">📍 Catatan pertama</span>'}
+      `;
+      list.appendChild(div);
+    });
+
+    document.querySelectorAll('.item-delete').forEach(btn => {
+      btn.onclick = () => {
+        if (confirm('Hapus catatan ini?')) {
+          data = data.filter(x => x.id !== btn.dataset.id);
+          save(); render();
+        }
+      };
+    });
+  }
+
+  function openForm() {
+    if (formOpen) return;
+    formOpen = true;
+    const area = $('formArea');
+    area.innerHTML = `
+      <div class="form-box">
+        <div class="time-display" id="liveTime">--:--:--</div>
+        <input type="text" id="noteInput" placeholder="Keterangan (mis: waktu kencing)" maxlength="200" autocomplete="off">
+        <div class="form-actions">
+          <button class="btn-cancel" id="cancelBtn">Batal</button>
+          <button class="btn-save" id="saveBtn">💾 Simpan</button>
+        </div>
+      </div>
+    `;
+    $('noteInput').focus();
+
+    const timer = setInterval(() => {
+      const el = $('liveTime');
+      if (!el) { clearInterval(timer); return; }
+      el.textContent = formatTime(Date.now());
+    }, 1000);
+    $('liveTime').textContent = formatTime(Date.now());
+
+    const closeForm = () => {
+      clearInterval(timer);
+      $('formArea').innerHTML = '';
+      formOpen = false;
+    };
+
+    $('cancelBtn').onclick = closeForm;
+
+    $('saveBtn').onclick = () => {
+      const note = $('noteInput').value.trim();
+      data.push({
+        id: Date.now() + '-' + Math.random().toString(36).slice(2,7),
+        ts: Date.now(),
+        note: note
+      });
+      save();
+      closeForm();
+      render();
+    };
+
+    $('noteInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') $('saveBtn').click();
+      if (e.key === 'Escape') $('cancelBtn').click();
+    });
+  }
+
+  $('addBtn').onclick = openForm;
+  $('clearBtn').onclick = () => {
+    if (confirm('Yakin hapus SEMUA data? Tindakan ini tidak bisa dibatalkan.')) {
+      data = [];
+      save(); render();
+    }
+  };
+  $('exportBtn').onclick = (e) => {
+    e.preventDefault();
+    if (data.length === 0) { alert('Belum ada data untuk diekspor.'); return; }
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `pencatat-waktu-${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  render();
+</script>
+</body>
+</html>
