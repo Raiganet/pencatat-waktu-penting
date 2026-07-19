@@ -7,8 +7,8 @@
 // 4. Paste di bawah ini
 // ============================================
 
-const SUPABASE_URL = 'https://XXXXX.supabase.co';       // ← ganti
-const SUPABASE_ANON_KEY = 'eyJhbGc...';                  // ← ganti
+const SUPABASE_URL = 'https://ypdnmsmutpsalyifatpy.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_S_9YQ4H2rA-j-oeWXsxHPA_hYxojRRV';
 
 // ============================================
 // JANGAN UBAH DI BAWAH INI
